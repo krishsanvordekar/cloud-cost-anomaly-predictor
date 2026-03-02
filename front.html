@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AWS Cost Prediction & Anomaly Detection</title>
+  <style>
+    /* Google Fonts for a modern look */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #f7d4d4 50%, #b3f0e3 50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      width: 90%;
+      max-width: 900px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #222;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="file"] {
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      transition: border 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #ff5c5c;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: #ff5c5c;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #e94d4d;
+      transform: scale(1.02);
+    }
+
+    .result {
+      margin-top: 10px;
+      background-color: #e2f0d9;
+      border: 1px solid #b6d7a8;
+      border-radius: 10px;
+      padding: 15px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      color: #2d572c;
+    }
+
+    /* Responsive tweak */
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="login-container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <div class="container" style="display: none;" id="main-app">
+    <h2>AWS Cost Prediction & Anomaly Detection</h2>
+    <form id="upload-form">
+      <input type="file" id="csvFile" accept=".csv" required />
+      <input type="text" id="service" placeholder="Enter AWS Service (e.g., Amazon EC2)" required />
+      <input type="text" id="month" placeholder="Enter Month (e.g., Jan-2024)" required />
+      <button type="submit">Analyze Costs</button>
+    </form>
+    <div class="result" id="output"></div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("login-form");
+    const mainApp = document.getElementById("main-app");
+    const loginContainer = document.getElementById("login-container");
+    const output = document.getElementById("output");
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      if (username === "admin" && password === "admin") {
+        loginContainer.style.display = 'none';
+        mainApp.style.display = 'flex';
+      } else {
+        alert("Invalid credentials. Try admin/admin.");
+      }
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const file = document.getElementById("csvFile").files[0];
+      const service = document.getElementById("service").value.trim();
+      const month = document.getElementById("month").value.trim();
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("service", service);
+      formData.append("month", month);
+
+      try {
+        const res = await fetch("/analyze", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.text();
+        output.textContent = data;
+      } catch (err) {
+        output.textContent = "❌ Error occurred: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
